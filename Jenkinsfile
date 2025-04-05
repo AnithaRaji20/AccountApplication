@@ -36,11 +36,13 @@ pipeline {
 		}
 
         stage('Deploy') {
-            steps {
-                // Add your deployment logic here (Docker, Kubernetes, etc.)
-                echo "Deploying application"
-            }
-        }
+    		steps {
+        		script {
+            // Running the Ansible playbook to deploy the Docker container
+             		sh 'ansible-playbook -i hosts.ini deploy-docker.yml'
+        			}
+    		}
+		}
     }
 
     post {
