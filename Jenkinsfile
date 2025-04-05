@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        SONAR_HOST_URL = 'http://localhost:9000'
-        SONAR_TOKEN = credentials('sonar-token')  // Jenkins credentials for SonarQube token
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -29,15 +24,16 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                script {
-                    // Ensure SonarQube environment is correctly injected and triggered.
-                    withSonarQubeEnv('SonarQube') { // 'SonarQube' is the name you set in Jenkins' SonarQube configuration
-                        sh "mvn sonar:sonar -Dsonar.projectKey=com.tus.accounts -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN"
-                    }
-                }
-            }
-        }
+			steps {
+				script {
+           
+					withSonarQubeEnv('SonarQube') { // 'SonarQube' should match the name you set in the Jenkins SonarQube configuration
+					// Run the SonarQube scan using Maven
+					sh './mvnw clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar'
+					}	
+				}
+			}
+		}
 
         stage('Deploy') {
             steps {
