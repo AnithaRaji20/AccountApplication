@@ -38,24 +38,16 @@ pipeline {
         }
 	
 
-        stage('Deploy with Docker Compose') {
+       /* stage('Deploy') {
             steps {
                 script {
-                    echo 'Stopping existing containers...'
-                    bat 'docker-compose down'
-
-                    echo 'Pulling latest images...'
-                    bat "docker pull ${DOCKER_HUB_USER}/${APP_IMAGE}:latest"
-
-                    echo 'Starting new deployment...'
-                    bat 'docker-compose up -d'
-                   
-                    echo 'Showing docker compose logs'
-                    bat 'docker-compose logs'
+                    bat '''wsl ansible-playbook ^
+                        -i /mnt/c/Users/anith/Documents/2nd_sem/Jenkins/AccountApplication/hosts.ini ^
+                        /mnt/c/Users/anith/Documents/2nd_sem/Jenkins/AccountApplication/deploy-docker.yml'''
                 }
             }
         }
-
+        */
     }
 
     post {
