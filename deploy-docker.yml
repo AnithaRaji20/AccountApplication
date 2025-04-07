@@ -4,6 +4,8 @@
   become: true  # Enable sudo for the tasks
   become_user: root  # Run as root user (optional)
   become_method: sudo  # Use sudo for privilege escalation
+  vars:
+      ansible_become_pass: "anitha2007"
 
   tasks:
     - name: Install Docker

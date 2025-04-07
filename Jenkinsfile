@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent any  // Ensure you have a correct agent to run the job
 
     stages {
         stage('Checkout') {
@@ -24,34 +24,34 @@ pipeline {
         }
 
         /*stage('SonarQube Analysis') {
-    		steps {
-        		script {
-            		withCredentials([string(credentialsId: 'sonar-token-jen', variable: 'SONAR_TOKEN_JEN')]) {
-                	withSonarQubeEnv('SonarQube') {
-                    bat """
-                        mvnw.cmd clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar \
-                        -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.token=%SONAR_TOKEN_JEN% \
-                        -Dsonar.java.binaries=target/classes \
-                        -X
-                    """
-                		}
-            		}
-        		}
-    		}
-		}*/
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'sonar-token-jen', variable: 'SONAR_TOKEN_JEN')]) {
+                        withSonarQubeEnv('SonarQube') {
+                            bat """
+                                mvnw.cmd clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.token=%SONAR_TOKEN_JEN% \
+                                -Dsonar.java.binaries=target/classes \
+                                -X
+                            """
+                        }
+                    }
+                }
+            }
+        }*/
 
-        
         stage('Deploy') {
             steps {
                 script {
-                    // Running the Ansible playbook to deploy the Docker container
-                    bat 'ansible-playbook -i hosts.ini deploy-docker.yml' // Or use 'wsl' if you're using WSL
+                    // Use WSL to run the Ansible playbook in Ubuntu (inside WSL)
+                    bat '''wsl ansible-playbook \
+                        -i /mnt/c/Users/anith/Documents/2nd_sem/Jenkins/AccountApplication/hosts.ini \
+                        /mnt/c/Users/anith/Documents/2nd_sem/Jenkins/AccountApplication/deploy-docker.yml'''
                 }
             }
         }
-        
-    } // <-- Proper closing for 'stages'
+    }
 
     post {
         always {
