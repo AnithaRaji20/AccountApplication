@@ -19,32 +19,35 @@ public class AccountsController {
 
     private final AccountsService accountsService;
 
+    // Define a constant for the "Account Not Found" message
+    private static final String ACCOUNT_NOT_FOUND_MESSAGE = "Account Not Found";
+
     public AccountsController(AccountsService accountsService) {
         this.accountsService = accountsService;
     }
 
     @PostMapping
     public Accounts createAccount(@Valid @RequestBody AccountsDto accountsDto) {
-    	Accounts accounts = mapToEntity(accountsDto);
+        Accounts accounts = mapToEntity(accountsDto);
         return accountsService.createAccount(accounts);
     }
 
     @GetMapping("/{id}")
     public Accounts getAccountById(@PathVariable Long id) {
-    	Optional<Accounts> accounts = accountsService.getAccountById(id);
-    	return accounts.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account Not Found"));
+        Optional<Accounts> accounts = accountsService.getAccountById(id);
+        return accounts.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ACCOUNT_NOT_FOUND_MESSAGE));
     }
-      
+
     @GetMapping
     public List<Accounts> getAllAccounts() {
         return accountsService.getAllAccounts();
     }
-    
+
     @PutMapping("/{id}")
-    public Accounts updateAccount(@PathVariable Long id,@Valid @RequestBody AccountsDto accountsDto) {
-    	Optional<Accounts> existingAccount = accountsService.getAccountById(id);
+    public Accounts updateAccount(@PathVariable Long id, @Valid @RequestBody AccountsDto accountsDto) {
+        Optional<Accounts> existingAccount = accountsService.getAccountById(id);
         if (existingAccount.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account Not Found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ACCOUNT_NOT_FOUND_MESSAGE);
         }
         Accounts accounts = mapToEntity(accountsDto);
         return accountsService.updateAccount(id, accounts);
@@ -52,16 +55,16 @@ public class AccountsController {
 
     @DeleteMapping("/{id}")
     public void deleteAccount(@PathVariable Long id) {
-    	Optional<Accounts> existingAccount = accountsService.getAccountById(id);
+        Optional<Accounts> existingAccount = accountsService.getAccountById(id);
         if (existingAccount.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account Not Found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ACCOUNT_NOT_FOUND_MESSAGE);
         }
         accountsService.deleteAccount(id);
     }
-    
+
     private Accounts mapToEntity(AccountsDto accountsDto) {
-    	Accounts account = new Accounts();
-    	account.setAccountNumber(accountsDto.getAccountNumber());
+        Accounts account = new Accounts();
+        account.setAccountNumber(accountsDto.getAccountNumber());
         account.setAccountType(accountsDto.getAccountType());
         account.setBranchAddress(accountsDto.getBranchAddress());
         account.setAccountHolderName(accountsDto.getAccountHolderName());
