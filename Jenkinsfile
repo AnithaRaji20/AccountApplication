@@ -28,7 +28,7 @@ pipeline {
         stage('Code Analysis with SonarQube') {
             steps {
                 script {
-                    sh '''
+                    bat '''
                         mvn clean verify sonar:sonar \
                           -Dsonar.projectKey=accounts \
                           -Dsonar.host.url=${SONARQUBE_URL} \
