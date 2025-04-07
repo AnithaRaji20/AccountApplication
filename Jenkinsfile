@@ -29,19 +29,20 @@ pipeline {
             }
         }
         
-        stage('Code Analysis with SonarQube') {
-            steps {
-                script {
-                    sh '''
-                        mvn clean verify sonar:sonar \
-                          -Dsonar.projectKey=accounts \
-                          -Dsonar.host.url=${SONARQUBE_URL} \
-                          -Dsonar.login=${SONARQUBE_TOKEN} \
-                          -Dsonar.java.binaries=target/classes
-                    '''
-                }
-            }
-        }
+	stage('Code Analysis with SonarQube') {
+    	steps {
+       		 script {
+          	  sh '''
+                mvn clean verify sonar:sonar \
+                  -Dsonar.projectKey=accounts \
+                  -Dsonar.host.url=${SONARQUBE_URL} \
+                  -Dsonar.login=${SONARQUBE_TOKEN} \
+                  -Dsonar.java.binaries=target/classes
+            	'''
+       		 }
+    		}
+		}
+
 
         /*stage('SonarQube Analysis') {
             steps {
