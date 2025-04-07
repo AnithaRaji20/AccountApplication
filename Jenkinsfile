@@ -36,36 +36,26 @@ pipeline {
                 """
             }
         }
+	
 
-        /*
-        stage('SonarQube Analysis') {
+        stage('Deploy with Docker Compose') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'sonar-token-jen', variable: 'SONAR_TOKEN_JEN')]) {
-                        withSonarQubeEnv('SonarQube') {
-                            bat """
-                                mvnw.cmd clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar ^
-                                    -Dsonar.host.url=http://localhost:9000 ^
-                                    -Dsonar.token=%SONAR_TOKEN_JEN% ^
-                                    -Dsonar.java.binaries=target/classes ^
-                                    -X
-                            """
-                        }
-                    }
+                    echo 'Stopping existing containers...'
+                    bat 'docker-compose down'
+
+                    echo 'Pulling latest images...'
+                    bat "docker pull ${DOCKER_HUB_USER}/${APP_IMAGE}:latest"
+
+                    echo 'Starting new deployment...'
+                    bat 'docker-compose up -d'
+                   
+                    echo 'Showing docker compose logs'
+                    bat 'docker-compose logs'
                 }
             }
         }
 
-        stage('Deploy') {
-            steps {
-                script {
-                    bat '''wsl ansible-playbook ^
-                        -i /mnt/c/Users/anith/Documents/2nd_sem/Jenkins/AccountApplication/hosts.ini ^
-                        /mnt/c/Users/anith/Documents/2nd_sem/Jenkins/AccountApplication/deploy-docker.yml'''
-                }
-            }
-        }
-        */
     }
 
     post {
