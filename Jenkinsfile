@@ -24,18 +24,19 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-    		steps {
-        		script {
-            		withCredentials([string(credentialsId: 'sonar-token-jen', variable: 'SONAR_TOKEN_JEN')]) {
-                	withSonarQubeEnv('SonarQube') {
-                    	bat "mvnw.cmd clean org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=\"%SONAR_TOKEN_JEN%\" -X"
-                		}
-            		}
-        		}
-    		}
-		}
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'sonar-token-jen', variable: 'SONAR_TOKEN_JEN')]) {
+                        withSonarQubeEnv('SonarQube') {
+                            bat "mvnw.cmd clean org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=\"%SONAR_TOKEN_JEN%\" -X"
+                        }
+                    }
+                }
+            }
+        }
 
-       /* stage('Deploy') {
+        /*
+        stage('Deploy') {
             steps {
                 script {
                     // Running the Ansible playbook to deploy the Docker container
@@ -43,7 +44,8 @@ pipeline {
                 }
             }
         }
-    }*/
+        */
+    } // <-- Proper closing for 'stages'
 
     post {
         always {
