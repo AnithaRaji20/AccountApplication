@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_URL = "http://localhost:9000"
+        SONARQUBE_URL = "http://localhost:9000/"
         SONARQUBE_TOKEN = "squ_263decad84ae28a5542f1167769d1ea84ecd86af"
     }
 
