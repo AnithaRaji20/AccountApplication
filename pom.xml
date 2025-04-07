@@ -29,6 +29,9 @@
 
     <properties>
         <java.version>17</java.version>
+        <sonar.token>squ_c66c569259bedce09a33dcbcc18d06503a699a55</sonar.token> 
+        <sonar.host.url>http://localhost:9000/</sonar.host.url>
+        <sonar.projectKey>com.tus.accounts</sonar.projectKey> 
     </properties>
 
     <dependencies>
@@ -128,7 +131,7 @@
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.9.0.1504</version>
+                <version>3.9.0.2155</version>
             </plugin>
         </plugins>
     </build>
