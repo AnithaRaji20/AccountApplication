@@ -29,6 +29,7 @@
 
     <properties>
         <java.version>17</java.version>
+        <sonar.token>squ_263decad84ae28a5542f1167769d1ea84ecd86af</sonar.token>
         <sonar.host.url>http://localhost:9000/</sonar.host.url>
         <sonar.projectKey>com.tus.accounts</sonar.projectKey>
         <sonar.java.binaries>target/classes</sonar.java.binaries>
