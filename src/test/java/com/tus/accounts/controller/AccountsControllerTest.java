@@ -5,178 +5,161 @@ import com.tus.accounts.entity.Accounts;
 import com.tus.accounts.service.AccountsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@ExtendWith(MockitoExtension.class)
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(AccountsController.class)
 public class AccountsControllerTest {
 
-    @InjectMocks
-    private AccountsController accountsController;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Mock
+    @SuppressWarnings("removal")
+	@MockBean
     private AccountsService accountsService;
 
     private AccountsDto accountsDto;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         accountsDto = new AccountsDto();
         accountsDto.setAccountNumber(12345L);
         accountsDto.setAccountType("Savings");
-        accountsDto.setBranchAddress("Main Branch");
         accountsDto.setAccountHolderName("John Doe");
-        accountsDto.setBalance(new BigDecimal("1000.00"));
+        accountsDto.setBranchAddress("123 Main St");
+        accountsDto.setBalance(BigDecimal.valueOf(1000));
         accountsDto.setStatus("Active");
     }
 
     @Test
-    public void testCreateAccount() {
+    void testCreateAccount() throws Exception {
         Accounts account = new Accounts();
-        account.setId(1L);
-        account.setAccountNumber(accountsDto.getAccountNumber());
-        account.setAccountType(accountsDto.getAccountType());
-        account.setBranchAddress(accountsDto.getBranchAddress());
-        account.setAccountHolderName(accountsDto.getAccountHolderName());
-        account.setBalance(accountsDto.getBalance());
-        account.setStatus(accountsDto.getStatus());
-
+        account.setAccountNumber(12345L);
         when(accountsService.createAccount(any(Accounts.class))).thenReturn(account);
 
-        Accounts result = accountsController.createAccount(accountsDto);
-        assertNotNull(result);
-        assertEquals(account.getAccountNumber(), result.getAccountNumber());
+        mockMvc.perform(post("/api/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"accountNumber\": 12345, \"accountType\": \"Savings\", \"accountHolderName\": \"John Doe\", \"branchAddress\": \"123 Main St\", \"balance\": 1000, \"status\": \"Active\" }"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountNumber").value(12345));
     }
 
     @Test
-    public void testGetAllAccounts() {
-    	Accounts account1 = new Accounts();
-        account1.setId(1L);
-        account1.setAccountNumber(12345L);
-        account1.setAccountType("Savings");
-        account1.setBranchAddress("Main Branch");
-        account1.setAccountHolderName("John Doe");
-        account1.setBalance(new BigDecimal("1000.00"));
-        account1.setStatus("Active");
-        // Arrange: Mock the service to return a list of accounts
-        when(accountsService.getAllAccounts()).thenReturn(Arrays.asList(account1));
-
-        // Act: Call the controller method
-        List<Accounts> result = accountsController.getAllAccounts();
-
-        // Assert: Verify that the result is correct
-        assertNotNull(result);  // Ensure the result is not null
-        assertEquals(1, result.size());  // Ensure the list size is correct
-        assertEquals("Main Branch", result.get(0).getBranchAddress()); 
-        assertEquals("John Doe", result.get(0).getAccountHolderName());  
-        assertEquals("Active", result.get(0).getStatus()); 
-        
-        // Verify that the service method was called once
-        verify(accountsService, times(1)).getAllAccounts();
+    void testCreateAccountValidationError() throws Exception {
+        // Missing account number (should trigger validation error)
+        mockMvc.perform(post("/api/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"accountType\": \"Savings\", \"accountHolderName\": \"John Doe\", \"branchAddress\": \"123 Main St\", \"balance\": 1000, \"status\": \"Active\" }"))
+                .andExpect(status().isBadRequest());
     }
-    
+
     @Test
-    public void testGetAccountById_Success() {
+    void testGetAccountById() throws Exception {
         Accounts account = new Accounts();
         account.setId(1L);
-        account.setAccountNumber(accountsDto.getAccountNumber());
+        account.setAccountNumber(12345L);
         when(accountsService.getAccountById(1L)).thenReturn(Optional.of(account));
 
-        Accounts result = accountsController.getAccountById(1L);
-        assertNotNull(result);
-        assertEquals(account.getAccountNumber(), result.getAccountNumber());
+        mockMvc.perform(get("/api/accounts/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountNumber").value(12345L));
     }
 
     @Test
-    public void testGetAccountById_NotFound() {
-        when(accountsService.getAccountById(1L)).thenReturn(Optional.empty());
+    void testGetAccountByIdNotFound() throws Exception {
+        when(accountsService.getAccountById(99L)).thenReturn(Optional.empty());
 
-        ResponseStatusException thrown = assertThrows(ResponseStatusException.class, () -> {
-            accountsController.getAccountById(1L);
-        });
-
-        assertEquals(HttpStatus.NOT_FOUND, thrown.getStatusCode());
-        assertEquals("Account Not Found", thrown.getReason());
+        mockMvc.perform(get("/api/accounts/99"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    public void testUpdateAccount_Success() {
+    void testGetAllAccounts() throws Exception {
+        Accounts account = new Accounts();
+        account.setAccountNumber(12345L);
+        when(accountsService.getAllAccounts()).thenReturn(List.of(account));
+
+        mockMvc.perform(get("/api/accounts"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].accountNumber").value(12345L));
+    }
+
+    @Test
+    void testGetAllAccountsEmptyList() throws Exception {
+        // Mock empty list response
+        when(accountsService.getAllAccounts()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/accounts"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("[]")); // Expect empty list
+    }
+
+    @Test
+    void testUpdateAccount() throws Exception {
         Accounts existingAccount = new Accounts();
         existingAccount.setId(1L);
-        existingAccount.setAccountNumber(12345L);
-        existingAccount.setAccountType("Savings");
-        existingAccount.setBranchAddress("Main Branch");
-        existingAccount.setAccountHolderName("John Doe");
-        existingAccount.setBalance(new BigDecimal("1000.00"));
-        existingAccount.setStatus("Active");
-
         when(accountsService.getAccountById(1L)).thenReturn(Optional.of(existingAccount));
+        when(accountsService.updateAccount(eq(1L), any(Accounts.class))).thenReturn(existingAccount);
 
-        Accounts updatedAccount = new Accounts();
-        updatedAccount.setId(1L);
-        updatedAccount.setAccountNumber(12345L);
-        updatedAccount.setAccountType("Checking");
-        updatedAccount.setBranchAddress("Branch 2");
-        updatedAccount.setAccountHolderName("John Doe");
-        updatedAccount.setBalance(new BigDecimal("1500.00"));
-        updatedAccount.setStatus("Active");
-
-        when(accountsService.updateAccount(anyLong(), any(Accounts.class))).thenReturn(updatedAccount);
-
-        Accounts result = accountsController.updateAccount(1L, accountsDto);
-        assertNotNull(result);
-        assertEquals("Checking", result.getAccountType());
-        assertEquals(new BigDecimal("1500.00"), result.getBalance());
+        mockMvc.perform(put("/api/accounts/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"accountNumber\": 12345, \"accountType\": \"Savings\", \"accountHolderName\": \"John Doe\", \"branchAddress\": \"123 Main St\", \"balance\": 1000, \"status\": \"Active\" }"))
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void testUpdateAccount_NotFound() {
+    void testUpdateAccountValidationError() throws Exception {
+        // Invalid account data, missing required fields
+        mockMvc.perform(put("/api/accounts/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"accountType\": \"Savings\", \"accountHolderName\": \"John Doe\", \"branchAddress\": \"123 Main St\", \"balance\": 1000, \"status\": \"Active\" }"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testUpdateAccountNotFound() throws Exception {
         when(accountsService.getAccountById(1L)).thenReturn(Optional.empty());
 
-        ResponseStatusException thrown = assertThrows(ResponseStatusException.class, () -> {
-            accountsController.updateAccount(1L, accountsDto);
-        });
-
-        assertEquals(HttpStatus.NOT_FOUND, thrown.getStatusCode());
-        assertEquals("Account Not Found", thrown.getReason());
+        mockMvc.perform(put("/api/accounts/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"accountNumber\": 12345, \"accountType\": \"Savings\", \"accountHolderName\": \"John Doe\", \"branchAddress\": \"123 Main St\", \"balance\": 1000, \"status\": \"Active\" }"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    public void testDeleteAccount_Success() {
-        Accounts existingAccount = new Accounts();
-        existingAccount.setId(1L);
-
-        when(accountsService.getAccountById(1L)).thenReturn(Optional.of(existingAccount));
+    void testDeleteAccount() throws Exception {
+        Accounts account = new Accounts();
+        when(accountsService.getAccountById(1L)).thenReturn(Optional.of(account));
         doNothing().when(accountsService).deleteAccount(1L);
 
-        accountsController.deleteAccount(1L);
-        verify(accountsService, times(1)).deleteAccount(1L);
+        mockMvc.perform(delete("/api/accounts/1"))
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void testDeleteAccount_NotFound() {
+    void testDeleteAccountNotFound() throws Exception {
         when(accountsService.getAccountById(1L)).thenReturn(Optional.empty());
 
-        ResponseStatusException thrown = assertThrows(ResponseStatusException.class, () -> {
-            accountsController.deleteAccount(1L);
-        });
+        mockMvc.perform(delete("/api/accounts/1"))
+                .andExpect(status().isNotFound());
+    }
 
-        assertEquals(HttpStatus.NOT_FOUND, thrown.getStatusCode());
-        assertEquals("Account Not Found", thrown.getReason());
+    @Test
+    void testDeleteAccountValidationError() throws Exception {
+        // Trying to delete an invalid account
+        mockMvc.perform(delete("/api/accounts/9999"))
+                .andExpect(status().isNotFound());
     }
 }

@@ -24,16 +24,22 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                script {
-                    withCredentials([string(credentialsId: 'sonar-token-jen', variable: 'SONAR_TOKEN_JEN')]) {
-                        withSonarQubeEnv('SonarQube') {
-                            bat "mvnw.cmd clean org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=\"%SONAR_TOKEN_JEN%\" -Dsonar.java.binaries=target/accounts-0.0.1-SNAPSHOT.jar -X"
-                        }
-                    }
-                }
-            }
-        }
+    		steps {
+        		script {
+            		withCredentials([string(credentialsId: 'sonar-token-jen', variable: 'SONAR_TOKEN_JEN')]) {
+                	withSonarQubeEnv('SonarQube') {
+                    bat """
+                        mvnw.cmd clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar \
+                        -Dsonar.host.url=http://localhost:9000 \
+                        -Dsonar.token=%SONAR_TOKEN_JEN% \
+                        -Dsonar.java.binaries=target/classes \
+                        -X
+                    """
+                		}
+            		}
+        		}
+    		}
+		}
 
         /*
         stage('Deploy') {
